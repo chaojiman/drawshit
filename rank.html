@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大便排行榜 - Draw a Shit!</title>
+    <meta name="description" content="为最搞笑的大便投票！看看谁的大便最受欢迎。">
+    <link rel="stylesheet" href="src/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💩</text></svg>">
+    <style>
+        #rank-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .poop-item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .poop-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            border-color: #007bff;
+        }
+        
+        .poop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .poop-canvas-container {
+            text-align: center;
+            margin: 15px 0;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .vote-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .vote-btn {
+            padding: 10px 20px;
+            border: 2px solid;
+            background: white;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+        
+        .upvote-btn {
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        .upvote-btn:hover {
+            background: #28a745;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .downvote-btn {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .downvote-btn:hover {
+            background: #dc3545;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .vote-count {
+            font-size: 24px;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+            color: #333;
+        }
+        
+        .rank-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .rank-badge.gold {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .rank-badge.silver {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .rank-badge.bronze {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+    </style>
+</head>
+<body>
+    <main role="main">
+        <div style="text-align: center; padding: 20px;">
+            <h1>大便排行榜 🏆💩</h1>
+            <h2>为你最喜欢的大便投票！</h2>
+            
+            <div style="margin: 20px;">
+                <button id="sort-votes" style="margin: 5px; padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px;">
+                    按票数排序 📊
+                </button>
+                <button id="sort-recent" style="margin: 5px; padding: 10px 20px; cursor: pointer; background: #6c757d; color: white; border: none; border-radius: 5px;">
+                    按时间排序 🕐
+                </button>
+            </div>
+            
+            <div id="rank-container">
+                <p id="no-poops-message" style="font-size: 18px; color: #666; padding: 40px;">
+                    还没有大便！去 <a href="index.html">画一个</a> 吧！
+                </p>
+            </div>
+            
+            <nav role="navigation" style="margin: 20px;">
+                <a href="index.html" style="margin: 0 10px; padding: 10px 20px; text-decoration: none; background: #007bff; color: white; border-radius: 5px;">画大便</a>
+                <a href="tank.html" style="margin: 0 10px; padding: 10px 20px; text-decoration: none; background: #28a745; color: white; border-radius: 5px;">幕布</a>
+            </nav>
+        </div>
+    </main>
+    
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/rank.js"></script>
+</body>
+</html>

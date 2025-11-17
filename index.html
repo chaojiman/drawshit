@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw a Shit! - 画个大便!</title>
+    <meta name="description" content="画一个大便，看它从天上掉下来！创作、分享和投票搞笑大便作品。">
+    <meta name="keywords" content="画大便, 大便绘画游戏, 在线绘画, 搞笑大便, 社区艺术">
+    <meta property="og:title" content="Draw a Shit - 画个大便">
+    <meta property="og:description" content="画一个大便，看它从天上掉下来！和大家一起创作搞笑大便作品。">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="src/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💩</text></svg>">
+</head>
+<body>
+    <main role="main">
+        <div id="draw-ui">
+            <section id="drawing-section">
+                <h1>画个大便！💩</h1>
+                <h2>(请让它有个性！)</h2>
+                
+                <!-- Paint toolbar -->
+                <div id="paint-bar"></div>
+                
+                <canvas id="draw-canvas" width="400" height="300" aria-label="大便绘画画布"></canvas>
+                
+                <br><br>
+                
+                <nav role="navigation" aria-label="操作按钮">
+                    <a href="tank.html" title="查看大便幕布">幕布 🎭</a>
+                    <button id="swim-btn" title="让你的大便掉下来">扔下去！💩</button>
+                    <a href="rank.html" title="投票评选大便">排行榜 🏆</a>
+                    <button id="clear-btn" title="清空画布">清空</button>
+                </nav>
+            </section>
+        </div>
+    </main>
+    
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/app.js"></script>
+</body>
+</html>
