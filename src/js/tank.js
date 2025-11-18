@@ -10,6 +10,13 @@ let animationId = null;
 let spawnInterval = null;
 let isRaining = false;
 
+const SIZE_MULTIPLIER = 1.5;
+const MIN_FALL_SPEED = 0.5;
+const MAX_FALL_SPEED = 1.5;
+const GRAVITY = 0.05;
+
+let audioContext = null;
+
 class FallingPoop {
     constructor(imageData, x, y, width, height) {
         this.element = document.createElement('div');
@@ -36,15 +43,23 @@ class FallingPoop {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.velocityY = Math.random() * 2 + 2; // Random fall speed
+        this.imageData = imageData;
+        this.velocityY = Math.random() * (MAX_FALL_SPEED - MIN_FALL_SPEED) + MIN_FALL_SPEED; // Slower fall speed
         this.rotation = Math.random() * 360;
         this.rotationSpeed = (Math.random() - 0.5) * 3;
-        this.scale = 0.5 + Math.random() * 0.5; // Random size
+        this.scale = 0.9 + Math.random() * 0.5; // Larger base size with variation
         this.opacity = 1;
         this.hasLanded = false;
         
+        this.element.style.pointerEvents = 'auto';
+        
         this.updatePosition();
         tankContainer.appendChild(this.element);
+        
+        this.element.addEventListener('click', (event) => {
+            event.stopPropagation();
+            handlePoopClick(this, event);
+        });
     }
     
     updatePosition() {
@@ -70,7 +85,7 @@ class FallingPoop {
             // Falling
             this.y += this.velocityY;
             this.rotation += this.rotationSpeed;
-            this.velocityY += 0.1; // Gravity
+            this.velocityY += GRAVITY; // Reduced gravity
             
             // Check if landed
             const containerHeight = tankContainer.offsetHeight;
@@ -108,19 +123,20 @@ function spawnRandomPoop() {
         // 70% chance to use a user-created poop
         const randomPoop = poops[Math.floor(Math.random() * poops.length)];
         imageData = randomPoop.imageData;
-        width = randomPoop.width || 100;
-        height = randomPoop.height || 100;
+        width = (randomPoop.width || 100) * SIZE_MULTIPLIER;
+        height = (randomPoop.height || 100) * SIZE_MULTIPLIER;
     } else {
         // 30% chance to generate a random styled poop
         const tempCanvas = document.createElement('canvas');
-        width = 80 + Math.random() * 60;
-        height = 80 + Math.random() * 60;
+        width = (80 + Math.random() * 60) * SIZE_MULTIPLIER;
+        height = (80 + Math.random() * 60) * SIZE_MULTIPLIER;
         PoopUtils.generateRandomPoop(tempCanvas, width, height);
         imageData = tempCanvas.toDataURL();
     }
     
     // Random x position
-    const x = Math.random() * (containerWidth - width);
+    const maxX = Math.max(0, containerWidth - width);
+    const x = Math.random() * maxX;
     const y = -height; // Start above the container
     
     const poop = new FallingPoop(imageData, x, y, width, height);
@@ -169,6 +185,110 @@ function stopPoopRain() {
 function clearAllPoops() {
     fallingPoops.forEach(poop => poop.remove());
     fallingPoops = [];
+}
+
+function initAudioContext() {
+    if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            return null;
+        }
+        audioContext = new AudioContextClass();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+}
+
+function playFartSound() {
+    const ctx = initAudioContext();
+    if (!ctx) {
+        return;
+    }
+    
+    const duration = 0.6;
+    const now = ctx.currentTime;
+    const sampleRate = ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, sampleRate * duration, sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    for (let i = 0; i < data.length; i++) {
+        const fade = 1 - i / data.length;
+        data[i] = (Math.random() * 2 - 1) * fade * 0.7;
+    }
+    
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(160, now);
+    filter.Q.value = 0.7;
+    
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.8, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+    
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    lfo.frequency.value = 20 + Math.random() * 10;
+    lfoGain.gain.value = 80;
+    
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    
+    const rumble = ctx.createOscillator();
+    rumble.type = 'sine';
+    rumble.frequency.setValueAtTime(60, now);
+    const rumbleGain = ctx.createGain();
+    rumbleGain.gain.setValueAtTime(0.2, now);
+    rumbleGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+    
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    
+    rumble.connect(rumbleGain);
+    rumbleGain.connect(ctx.destination);
+    
+    noise.start(now);
+    noise.stop(now + duration);
+    lfo.start(now);
+    lfo.stop(now + duration);
+    rumble.start(now);
+    rumble.stop(now + duration);
+}
+
+function handlePoopClick(poop, event) {
+    playFartSound();
+    
+    const rect = tankContainer.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const scaledWidth = poop.width * poop.scale;
+    const scaledHeight = poop.height * poop.scale;
+    
+    const hitEffect = document.createElement('div');
+    hitEffect.className = 'poop-hit-effect';
+    hitEffect.style.left = `${x}px`;
+    hitEffect.style.top = `${y}px`;
+    hitEffect.style.width = `${scaledWidth}px`;
+    hitEffect.style.height = `${scaledHeight}px`;
+    hitEffect.style.backgroundImage = `url(${poop.imageData})`;
+    hitEffect.style.setProperty('--initial-rotation', `${poop.rotation}deg`);
+    hitEffect.style.pointerEvents = 'none';
+    
+    tankContainer.appendChild(hitEffect);
+    createParticleEffect(x, y);
+    
+    hitEffect.addEventListener('animationend', () => {
+        hitEffect.remove();
+    });
+    
+    poop.remove();
+    fallingPoops = fallingPoops.filter(item => item !== poop);
+    poopCountEl.textContent = fallingPoops.length;
 }
 
 // Event listeners

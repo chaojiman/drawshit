@@ -8,24 +8,131 @@
     <link rel="stylesheet" href="src/css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💩</text></svg>">
     <style>
-        #tank-container {
-            position: relative;
-            width: 100%;
-            height: calc(100vh - 150px);
-            min-height: 500px;
+        body.tank-page {
             background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #F0F8FF 100%);
-            border: 3px solid #8B4513;
-            border-radius: 10px;
+            padding: 0;
+            margin: 0;
             overflow: hidden;
-            margin: 20px auto;
-            max-width: 1200px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #tank-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #F0F8FF 100%);
+            overflow: hidden;
+        }
+        
+        .tank-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 123, 255, 0.6);
+            border-radius: 12px;
+            color: #007bff;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            z-index: 1001;
+        }
+        
+        .back-btn:hover {
+            background: rgba(0, 123, 255, 0.95);
+            color: white;
+            transform: translateX(-5px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.5);
+        }
+        
+        .stats-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
+            z-index: 1001;
+        }
+        
+        .controls-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+            z-index: 1001;
+        }
+        
+        .controls-panel button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #spawn-poop-btn {
+            background: #8B4513;
+            color: white;
+        }
+        
+        #spawn-poop-btn:hover {
+            background: #654321;
+            transform: translateY(-2px);
+        }
+        
+        #stop-poop-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        #stop-poop-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
         }
         
         .falling-poop {
             position: absolute;
-            pointer-events: none;
+            cursor: pointer;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            transition: transform 0.1s ease;
+        }
+        
+        .falling-poop:hover {
+            filter: drop-shadow(3px 3px 8px rgba(0,0,0,0.5));
+            transform: scale(1.05);
         }
         
         .poop-canvas {
@@ -33,13 +140,29 @@
             height: 100%;
         }
         
-        #stats {
-            text-align: center;
-            padding: 10px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 8px;
-            margin: 10px auto;
-            max-width: 600px;
+        .poop-hit-effect {
+            position: absolute;
+            pointer-events: none;
+            z-index: 999;
+            transform-origin: center;
+            background-size: cover;
+            background-position: center;
+            animation: poopZoom 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+        
+        @keyframes poopZoom {
+            0% {
+                transform: rotate(var(--initial-rotation, 0deg)) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: rotate(calc(var(--initial-rotation, 0deg) + 180deg)) scale(3);
+                opacity: 0.8;
+            }
+            100% {
+                transform: rotate(calc(var(--initial-rotation, 0deg) + 360deg)) scale(5);
+                opacity: 0;
+            }
         }
         
         .cloud {
@@ -48,6 +171,7 @@
             border-radius: 100px;
             opacity: 0.7;
             animation: float 20s infinite ease-in-out;
+            pointer-events: none;
         }
         
         @keyframes float {
@@ -56,36 +180,31 @@
         }
     </style>
 </head>
-<body>
-    <main role="main">
-        <div style="text-align: center; padding: 20px;">
-            <h1>大便幕布 💩🎭</h1>
-            <h2>看大便从天上掉下来！</h2>
-            
-            <div id="stats">
-                <p>当前幕布上的大便: <strong id="poop-count">0</strong></p>
-                <p>总共创作的大便: <strong id="total-poops">0</strong></p>
-                <button id="spawn-poop-btn" style="margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #8B4513; color: white; border: none; border-radius: 8px;">
-                    开始下大便雨！ 🌧️💩
-                </button>
-                <button id="stop-poop-btn" style="margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 8px; display: none;">
-                    停止下雨 🛑
-                </button>
-            </div>
-            
-            <div id="tank-container">
-                <!-- Clouds for atmosphere -->
-                <div class="cloud" style="width: 80px; height: 40px; top: 10%; left: 10%;"></div>
-                <div class="cloud" style="width: 100px; height: 50px; top: 15%; left: 60%; animation-delay: -5s;"></div>
-                <div class="cloud" style="width: 60px; height: 30px; top: 8%; left: 85%; animation-delay: -10s;"></div>
-            </div>
-            
-            <nav role="navigation" style="margin: 20px;">
-                <a href="index.html" style="margin: 0 10px; padding: 10px 20px; text-decoration: none; background: #007bff; color: white; border-radius: 5px;">画大便</a>
-                <a href="rank.html" style="margin: 0 10px; padding: 10px 20px; text-decoration: none; background: #28a745; color: white; border-radius: 5px;">排行榜</a>
-            </nav>
+<body class="tank-page">
+    <div id="tank-container">
+        <!-- Clouds for atmosphere -->
+        <div class="cloud" style="width: 80px; height: 40px; top: 10%; left: 10%;"></div>
+        <div class="cloud" style="width: 100px; height: 50px; top: 15%; left: 60%; animation-delay: -5s;"></div>
+        <div class="cloud" style="width: 60px; height: 30px; top: 8%; left: 85%; animation-delay: -10s;"></div>
+    </div>
+    
+    <div class="tank-overlay">
+        <a href="index.html" class="back-btn">◀ 返回</a>
+        
+        <div class="stats-panel">
+            <p style="margin: 5px 0;">当前幕布: <strong id="poop-count">0</strong>💩</p>
+            <p style="margin: 5px 0;">总共创作: <strong id="total-poops">0</strong>💩</p>
         </div>
-    </main>
+        
+        <div class="controls-panel">
+            <button id="spawn-poop-btn">
+                开始下大便雨！ 🌧️💩
+            </button>
+            <button id="stop-poop-btn" style="display: none;">
+                停止下雨 🛑
+            </button>
+        </div>
+    </div>
     
     <script src="src/js/utils.js"></script>
     <script src="src/js/tank.js"></script>
